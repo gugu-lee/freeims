@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+
+	<pcscf>
+		<realm name="saygreet.com" host="pcscf.saygreet.com" ipAddress="120.24.95.155"
+			port="4060">
+		</realm>
+		<rtpproxy enabled="true" host="120.24.95.155" port="9000">
+		</rtpproxy>
+	</pcscf>
+	<icscf>
+		<realm name="ifoot.io" host="icscf.ifoot.io" ipAddress="120.24.95.155"
+			port="5060">
+		</realm>
+	</icscf>
+	<scscf>
+		<realm name="x-talker.net" host="scscf.x-talker.net" ipAddress="120.24.95.155"
+			port="6060">
+		</realm>
+	</scscf>
+</config>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app id="WebApp_ID" version="3.0"
+	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+	<display-name>Archetype Created Web Application</display-name>
+	<filter>
+		<filter-name>IRealmFilter</filter-name>
+		<filter-class>org.freeims.ims.i.IRealmFilter</filter-class>
+		<init-param>
+			<param-name>configFile</param-name>
+			<param-value>iConfig.xml</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>IRealmFilter</filter-name>
+		<url-pattern>/MainServlet</url-pattern>
+	</filter-mapping>
+	<servlet>
+		<servlet-name>MainServlet</servlet-name>
+		<servlet-class>org.freeims.ims.i.IServlet</servlet-class>
+		<init-param>
+			<param-name>diameterPeerConfig</param-name>
+			<param-value>diameterPeerI.xml</param-value>
+		</init-param>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>MainServlet</servlet-name>
+		<url-pattern>/MainServlet</url-pattern>
+	</servlet-mapping>
+
+
+</web-app>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app id="WebApp_ID" version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+		<filter>
+		<filter-name>SRealmFilter</filter-name>
+		<filter-class>org.freeims.ims.s.SRealmFilter</filter-class>
+
+	</filter>
+		<filter-mapping>
+		<filter-name>SRealmFilter</filter-name>
+		<url-pattern>/MainServlet</url-pattern>
+	</filter-mapping>
+	<servlet>
+		<servlet-name>MainServlet</servlet-name>
+		<servlet-class>org.freeims.ims.s.SServlet</servlet-class>
+		<init-param>
+			<param-name>diameterPeerConfig</param-name>
+			<param-value>diameterPeerS.xml</param-value>
+		</init-param>
+		<init-param>
+			<param-name>configFile</param-name>
+			<param-value>sConfig.xml</param-value>
+		</init-param>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>MainServlet</servlet-name>
+		<url-pattern>/MainServlet</url-pattern>
+	</servlet-mapping>
+
+</web-app>

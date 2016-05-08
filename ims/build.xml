@@ -1,0 +1,29 @@
+<project name="IMS" default="dist" basedir=".">
+  <description>
+    simple example build file
+  </description>
+  <!-- set global properties for this build -->
+  <property name="src" location="src"/>
+  <property name="build" location="build"/>
+  <property name="dist" location="dist"/>
+
+
+  <target name="dist"
+        description="generate the distribution">
+    <!-- Create the distribution directory -->
+    <mkdir dir="${dist}/dist/pcscf"/>
+	<mkdir dir="${dist}/dist/icscf"/>
+	<mkdir dir="${dist}/dist/scscf"/>
+	<copy file="pcscf/target/Main.war" tofile="${dist}/dist/pcscf/Main.war"/>
+	<copy file="icscf/target/Main.war" tofile="${dist}/dist/icscf/Main.war"/>
+	<copy file="scscf/target/Main.war" tofile="${dist}/dist/scscf/Main.war"/>
+  </target>
+
+  <target name="clean"
+        description="clean up">
+    <!-- Delete the ${build} and ${dist} directory trees -->
+    <delete dir="${dist}/dist/pcscf"/>
+    <delete dir="${dist}/dist/icscf"/>
+	<delete dir="${dist}/dist/scscf"/>
+  </target>
+</project>

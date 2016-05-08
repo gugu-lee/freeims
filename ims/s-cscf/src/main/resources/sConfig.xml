@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+
+	<scscf>
+		<realm name="freeims.org" host="scscf.freeims.org" ipAddress="127.0.0.1"
+			port="6060" hssAddress="hss.freeims.org">
+		</realm>
+	</scscf>
+</config>

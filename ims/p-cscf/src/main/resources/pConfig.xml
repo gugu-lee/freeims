@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+
+	<pcscf dnsServer="127.0.0.1">
+		<realm name="freeims.org" host="pcscf.freeims.org" ipAddress="127.0.0.1"
+			port="4060">
+		</realm>
+		<rtpproxy enabled="true" host="127.0.0.1" port="9000">
+		</rtpproxy>
+	</pcscf>
+
+</config>

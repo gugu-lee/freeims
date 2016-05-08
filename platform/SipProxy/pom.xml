@@ -1,0 +1,108 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.freeims</groupId>
+	<artifactId>SipProxy</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+
+	<name>SipProxy</name>
+	<url>http://www.freeims.org</url>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+<!-- 		<jdk.version>1.7</jdk.version>
+		<jodatime.version>2.5</jodatime.version>
+		<junit.version>4.11</junit.version>
+		<log4j.version>1.2.17</log4j.version> -->
+
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.14</version>
+		</dependency>
+		<dependency>
+			<groupId>org.freeims</groupId>
+			<artifactId>jain-sip-impl</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.freeims</groupId>
+			<artifactId>jain-sip-api</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.freeims</groupId>
+			<artifactId>jain-sip-sdp</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>dnsjava</groupId>
+			<artifactId>dnsjava</artifactId>
+			<version>2.1.7</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-digester3</artifactId>
+			<version>3.2</version>
+			<classifier>with-deps</classifier>
+		</dependency>
+		<dependency>
+			<groupId>net.java.stun4j</groupId>
+			<artifactId>stun4j</artifactId>
+			<version>1.0.MOBICENTS</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>tomcat-catalina</artifactId>
+			<version>9.0.0.M4</version>
+		</dependency>
+	</dependencies>
+	<repositories>
+		<repository>
+			<id>center</id>
+			<name>apache</name>
+			<url>http://repo.maven.apache.org/maven2/</url>
+			<layout>default</layout>
+			<releases>
+				<enabled>false</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+				<updatePolicy>never</updatePolicy>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>spring</id>
+			<name>spring</name>
+			<url>http://repository.jboss.com/nexus/content/repositories/root_repository/maven2/</url>
+			<layout>default</layout>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</snapshots>
+		</repository>
+	</repositories>
+		<build>
+
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.5</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
