@@ -10,9 +10,6 @@
         <dependent-module archiveName="ims-common-0.0.1-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/ims-common/ims-common">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="diameterpeer-1.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/diameterpeer/diameterpeer">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
         <dependent-module archiveName="jain-sip-impl-1.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/jain-sip-impl/jain-sip-impl">
             <dependency-type>uses</dependency-type>
         </dependent-module>
