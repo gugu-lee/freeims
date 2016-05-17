@@ -13,9 +13,10 @@ public interface SipProxyRequest extends ServletRequest,SipProxyMessage
 	
 	public void setApplicationData(Object o);
 	public SipProxyResponse createResponse(int status);
+	public SipProxyResponse createResponse(int status,String responsePhrase);
 	public void sendResponse(SipProxyResponse resp);
 	public void sendResponse(int code);
-	public void sendResponse(int code,String label);
+	public void sendResponse(int code,String responsePhrase);
 	public void setRequestEvent(RequestEvent event);
 	
 	public void proxyTo(String appId);
@@ -31,6 +32,7 @@ public interface SipProxyRequest extends ServletRequest,SipProxyMessage
 	public SubsequentAction createNoneAction();
 	public SubsequentAction createResponseAction(int status);
 	public SubsequentAction createResponseAction(int status,String reason);
+	public SubsequentAction createResponseAction(SipProxyResponse response);
 	public SubsequentAction createBothAction(int status);
 	public SubsequentAction createBothAction(int status,String reason);
 	/**

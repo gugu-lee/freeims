@@ -23,9 +23,13 @@ public class SipProxyResponseImpl extends SipProxyMessageImpl implements SipProx
 	{
 		return ((Response)this.getMessage()).getStatusCode();
 	}
+	public String getReasonPhrase()
+	{
+		return ((Response)this.getMessage()).getReasonPhrase();
+	}
 	@Override
 	public void flushBuffer() throws IOException {
-		// TODO Auto-generated method stub
+
 		
 	}
 	@Override

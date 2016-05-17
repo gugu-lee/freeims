@@ -20,6 +20,7 @@ import javax.sip.TimeoutEvent;
 import javax.sip.TransactionTerminatedEvent;
 import javax.sip.address.URI;
 import javax.sip.header.CSeqHeader;
+import javax.sip.header.Header;
 import javax.sip.header.ViaHeader;
 import javax.sip.message.Request;
 import javax.sip.message.Response;
@@ -141,8 +142,11 @@ public class SipProxyApplicationDispatcher implements SipListener {
 			}
 
 			SipProxyRequestImpl proxyRequest = (SipProxyRequestImpl)SipProxyMessageFactory.createRequest(request,event.getServerTransaction());
-			MaxForwards maxForward = ((MaxForwards)proxyRequest.getMessage().getHeader(MaxForwards.NAME));
-			maxForward.setMaxForwards(maxForward.getMaxForwards());
+			Header h = proxyRequest.getMessage().getHeader(MaxForwards.NAME);
+			if (h!=null){
+				MaxForwards maxForward = (MaxForwards)h;
+				maxForward.setMaxForwards(maxForward.getMaxForwards()-1);
+			}
 			proxyRequest.setDispatcher(this);
 			proxyRequest.setRequestEvent(event);
 			//SipProxyResponse proxyResponse = proxyRequest.createResponse(200);
@@ -182,10 +186,16 @@ public class SipProxyApplicationDispatcher implements SipListener {
 			if (subAction.getType() == ActionType.BOTH || subAction.getType() == ActionType.RESPONSE) {
 				try {
 					Response r = null;
-					r = SipFactory.getInstance().createMessageFactory().createResponse(subAction.getResponseStatus(),
-							request);
-					if (subAction.getResponseReason() != null) {
-						r.setReasonPhrase(subAction.getResponseReason());
+					SipProxyResponse proxyResp = subAction.getResponse();
+					if (proxyResp !=null)
+					{
+						r = (Response)proxyResp.getMessage();
+					}else{
+						r = SipFactory.getInstance().createMessageFactory().createResponse(subAction.getResponseStatus(),
+								request);
+						if (subAction.getResponseReason() != null) {
+							r.setReasonPhrase(subAction.getResponseReason());
+						}
 					}
 					sendResponse(event,r);
 				} catch (Exception e) {

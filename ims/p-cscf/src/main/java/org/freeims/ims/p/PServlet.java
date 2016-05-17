@@ -32,6 +32,7 @@ import org.freeims.ims.rtpproxy.RtpProxyControlClient;
 import org.freeims.javax.sip.address.SipUri;
 import org.freeims.javax.sip.header.Contact;
 import org.freeims.javax.sip.header.To;
+import org.freeims.javax.sip.header.ViaList;
 import org.freeims.javax.sip.address.AddressImpl;
 import org.freeims.javax.sip.message.SIPMessage;
 import org.freeims.sipproxy.servlet.SipProxyRequest;
@@ -129,7 +130,7 @@ public class PServlet extends GenericServlet
 			req.setHeader("P-Asserted-Identity", req.getFrom().getURI().toString());
 
 			req.setHeader("P-Charging-Vector",
-					"icid-value=\"P-CSCF"+ueIcidValueTable.get(req.getFrom())
+					"icid-value=\"P-CSCF"+createIcidValue() //ueIcidValueTable.get(req.getFrom())
 					+"\";icid-generated-at="+d.getHost());
 
 			req.addHeader(RecordRouteHeader.NAME, "sip:mo@"+d.getHost()+":"+d.getPort());
@@ -253,7 +254,23 @@ public class PServlet extends GenericServlet
 				(method.equals("INVITE")  || method.equals(Request.PRACK) 
 						/*|| method.equals(Request.CANCEL) || method.equals(Request.BYE) */ || method.equals(Request.UPDATE))) {
 			//Request req = resp.getOriginalRequest();
-			ViaHeader via = (ViaHeader)((SIPMessage)resp.getMessage()).getViaHeaders().getFirst();
+			SIPMessage sipMessage = (SIPMessage)resp.getMessage();
+			if (sipMessage == null)
+			{
+				return;
+			}
+			ViaList viaList = sipMessage.getViaHeaders();
+			if (viaList == null)
+			{
+				logger.info("viaList is null");
+				return ;
+			}
+			ViaHeader via = (ViaHeader)viaList.getFirst();
+			if (via == null)
+			{
+				logger.info("via is null");
+				return ;
+			}
 			if (via.getParameter("app_id").equals("mt"))
 			{
 				logger.info("alter contact");

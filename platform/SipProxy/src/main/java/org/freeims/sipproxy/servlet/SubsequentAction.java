@@ -1,5 +1,8 @@
 package org.freeims.sipproxy.servlet;
 
+import java.text.ParseException;
+
+import javax.sip.message.Response;
 
 public class SubsequentAction {
 	public enum ActionType{NONE, //do nothing
@@ -13,6 +16,8 @@ public class SubsequentAction {
 	private ActionType type;
 	private Object targetData;
 	private String appId = null;
+	
+	private SipProxyResponse response=null;
 	
 	public String getAppId() {
 		return appId;
@@ -87,17 +92,47 @@ public class SubsequentAction {
 	public void setType(ActionType type) {
 		this.type = type;
 	}
+	
 	public int getResponseStatus() {
+		if (response!=null){
+			return response.getStatus();
+		}
 		return responseStatus;
 	}
+	
 	public void setResponseStatus(int responseStatus) {
+		if (response!=null){
+			try{
+			((Response)response.getMessage()).setStatusCode(responseStatus);
+			}catch(ParseException e)
+			{}
+		}
 		this.responseStatus = responseStatus;
 	}
+	
 	public String getResponseReason() {
+		if (response!=null){
+			return ((Response)response.getMessage()).getReasonPhrase();
+		}
 		return responseReason;
 	}
+	
 	public void setResponseReason(String responseReason) {
+		if (response!=null){
+			try{
+			((Response)response.getMessage()).setReasonPhrase(responseReason);
+			}catch(ParseException e)
+			{}
+		}
 		this.responseReason = responseReason;
+	}
+
+	public SipProxyResponse getResponse() {
+		return response;
+	}
+
+	public void setResponse(SipProxyResponse response) {
+		this.response = response;
 	}
 	
 	

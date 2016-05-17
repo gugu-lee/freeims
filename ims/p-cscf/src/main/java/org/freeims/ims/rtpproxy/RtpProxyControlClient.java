@@ -16,9 +16,11 @@ import javax.sip.header.ToHeader;
 
 import org.apache.log4j.Logger;
 import org.freeims.sipproxy.servlet.SipProxyMessage;
+import org.freeims.sipproxy.servlet.SipProxyRequest;
 import org.freeims.sipproxy.servlet.SipProxyResponse;
 import org.freeims.sipproxy.servlet.impl.SipProxyMessageImpl;
-
+import org.freeims.javax.sdp.SessionDescriptionImpl;
+import org.freeims.javax.sdp.fields.AttributeField;
 import org.freeims.javax.sip.message.SIPMessage;
 
 public class RtpProxyControlClient {
@@ -45,8 +47,12 @@ public class RtpProxyControlClient {
 		}
 		SdpFactory sdpFactory = SdpFactory.getInstance();
 		try {
-			SessionDescription sd = sdpFactory.createSessionDescription(new String(message.getRawContent()));
-
+			SessionDescriptionImpl sd = (SessionDescriptionImpl)sdpFactory.createSessionDescription(new String(message.getRawContent()));
+			String noRtpProxy = sd.getAttribute("nortpproxy");
+			if (noRtpProxy !=null && noRtpProxy.equals("yes"))
+			{
+				return;
+			}
 			Connection cn = sd.getConnection();
 			cn.setAddress(host);
 
@@ -83,6 +89,15 @@ public class RtpProxyControlClient {
 				}
 				RtpProxyResponse resp = requestCommand(rtpProxyRequest);
 				m.setMediaPort(Integer.parseInt(resp.getValue()));
+				
+				
+			}
+			if (message instanceof SipProxyRequest){
+				AttributeField attr = new AttributeField();
+				attr.setName("nortpproxy");
+				attr.setValue("yes");
+				logger.info("nortpproxy:yes");
+				sd.addField(attr);
 			}
 			message.setContent(sd.toString(), CONTENT_TYPE_SDP);
 		} catch (Exception e) {

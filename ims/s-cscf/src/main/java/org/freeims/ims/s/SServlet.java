@@ -235,6 +235,9 @@ public class SServlet extends GenericServlet {
 				return;
 			}
 			try {
+				SipURI toURI = (SipURI) req.getTo().getURI();
+
+				realmConfig = scscfConf.getRealmConfig(toURI.getHost());
 				SipUtil.alterRequestURI(req, (SipURI) ueInfo.getContact().getAddress().getURI());
 
 				Address addr = SipProxyFactory.getAddressFactory().createAddress("sip:mt@"+realmConfig.getHost()+":"+realmConfig.getPort());

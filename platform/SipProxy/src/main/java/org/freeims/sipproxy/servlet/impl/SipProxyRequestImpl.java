@@ -159,6 +159,13 @@ public class SipProxyRequestImpl extends  SipProxyMessageImpl  implements SipPro
 		setSubsequentAction(action);
 		return action;
 	}
+	public SubsequentAction createResponseAction(SipProxyResponse response)
+	{
+		SubsequentAction action = SubsequentAction.createResponseAction(response.getStatus(), response.getReasonPhrase());
+		action.setResponse(response);
+		setSubsequentAction(action);
+		return action;
+	}
 	public SubsequentAction createBothAction(int status)
 	{
 		return this.createBothAction(status, null);

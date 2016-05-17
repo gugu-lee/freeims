@@ -13,6 +13,8 @@ import org.freeims.common.SipUtil;
 import org.freeims.ims.config.Config;
 import org.freeims.ims.config.PCscfConfig;
 import org.freeims.sipproxy.servlet.SipProxyRequest;
+import org.freeims.sipproxy.servlet.SipProxyResponse;
+import org.freeims.sipproxy.servlet.SubsequentAction;
 import org.freeims.sipproxy.servlet.impl.SipProxyFilter;
 import org.freeims.sipproxy.servlet.impl.SipProxyRequestImpl;
 
@@ -20,7 +22,9 @@ public class PRealmFilter extends SipProxyFilter
 {
 
 	private static Logger logger = Logger.getLogger(PRealmFilter.class);
-
+	private final static String BODY_TYPE_TEXT="text/plain";
+	private final static String BODY_RESPONSE_403="you has not legal realm.you could send email to service@freeims.org if you need any help.";
+	
 	private PCscfConfig pcscfConf = null;
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
@@ -43,7 +47,10 @@ public class PRealmFilter extends SipProxyFilter
 			String realm = SipUtil.extractRealm(req);
 			if (pcscfConf.getRealmConfig(realm)==null)
 			{
-				req.createResponseAction(500, "No support your realm.By P-CSCF.");
+				SipProxyResponse resp = req.createResponse(403,"No support your realm.By P-CSCF.");
+				resp.setContent(BODY_RESPONSE_403, BODY_TYPE_TEXT);
+				
+				 req.createResponseAction(resp);
 				return;
 			}
 		} catch (Exception e) {

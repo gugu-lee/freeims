@@ -8,6 +8,7 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
 import javax.sip.address.Address;
+import javax.sip.address.SipURI;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.helpers.Loader;
@@ -266,22 +267,13 @@ public class IServlet extends GenericServlet implements EventListener, Transacti
 		DiameterMessage message = new DiameterMessage(DiameterConstants.Command.LIR, true, false,
 				DiameterConstants.Application.Cx, diameterPeer.getNextHopByHopId(), diameterPeer.getNextHopByHopId());
 
-
-			String toURI = req.getTo().getURI().toString();
-//			String username = null;
-//			
-//			if (toURI.startsWith("sips:")) {
-//				username = toURI.substring(5);
-//			} else if (toURI.startsWith("sip:")) {
-//				username = toURI.substring(4);
-//			}
-			String realm = null;
-			int pos = toURI.indexOf('@');
-			realm = toURI.substring(pos + 1);
+		String realm =  SipUtil.extractRealm((SipURI)req.getTo().getURI());
+		logger.info("realm:"+realm);
 		
-
 		UtilAVP.addDestinationRealm(message, realm);
-		//UtilAVP.addDestinationHost(message, "hss." + realm);
+		String hssAddress = this.iConfig.getRealmConfig(realm).getHssAddress();
+		logger.info("hssAddress:"+hssAddress);
+		UtilAVP.addDestinationHost(message, hssAddress);
 
 		UtilAVP.addPublicIdentity(message, req.getTo().getURI().toString());
 		UtilAVP.addOriginatingRequest(message, 1);

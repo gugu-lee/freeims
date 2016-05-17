@@ -1,8 +1,10 @@
 package org.freeims.sipproxy.servlet.impl;
 
+import java.text.ParseException;
 import java.util.List;
 
 import javax.sip.Dialog;
+import javax.sip.PeerUnavailableException;
 import javax.sip.SipException;
 import javax.sip.SipFactory;
 import javax.sip.Transaction;
@@ -192,7 +194,19 @@ public  class SipProxyMessageImpl implements SipProxyMessage {
 	{
 		if(contentType != null && contentType.length() > 0) {
 
-			ContentTypeHeader contentTypeHeader = (ContentTypeHeader)this.message.getHeader(ContentTypeHeader.NAME);			
+			ContentTypeHeader contentTypeHeader = (ContentTypeHeader)this.message.getHeader(ContentTypeHeader.NAME);
+			if (contentTypeHeader == null)
+			{
+				
+				try {
+					contentTypeHeader = (ContentTypeHeader)SipFactory.getInstance().createHeaderFactory().createHeader(ContentTypeHeader.NAME, contentType);
+				} catch (PeerUnavailableException e) {
+					throw new IllegalArgumentException(e.getMessage(),e);
+				} catch (ParseException e) {
+					throw new IllegalArgumentException(e.getMessage(),e);
+				}
+				this.addHeader(contentTypeHeader);
+			}
 			String charset = this.getCharacterEncoding();
 			try {	
 				//only for String content temporary.

@@ -17,7 +17,8 @@ import org.freeims.sipproxy.servlet.SipProxyMessage;
 import org.freeims.sipproxy.servlet.SipProxyRequest;
 import org.freeims.sipproxy.servlet.SipProxyResponse;
 import org.freeims.sipproxy.servlet.impl.SipProxyMessageImpl;
-
+import org.freeims.javax.sdp.SessionDescriptionImpl;
+import org.freeims.javax.sdp.fields.AttributeField;
 import org.freeims.javax.sip.address.SipUri;
 import org.freeims.javax.sip.header.Authorization;
 import org.freeims.javax.sip.header.Contact;
@@ -69,6 +70,10 @@ public class SipUtil {
 		return fromURI.getHost();
 	}
 
+	public static String extractRealm(SipURI uri)
+	{
+		return uri.getHost();
+	}
 	public static String extractUsername(SipProxyRequest req) {
 		Authorization auth = (Authorization) req.getParameterableHeader(Authorization.NAME);
 
@@ -103,13 +108,13 @@ public class SipUtil {
 	private static final String CONTENT_TYPE_SDP = "application/sdp";
 	public static void adjustSdpParameter(SipProxyMessage message)
 	{	
-		if ( message.getContentLength() == 0 ||  !message.getContentType().equals("application/sdp") )
+		if ( message.getContentLength() == 0 ||  !message.getContentType().equals(CONTENT_TYPE_SDP) )
 		{
 		return ;
 		}
 		SdpFactory sdpFactory = SdpFactory.getInstance();
 		try {
-			SessionDescription sd = sdpFactory.createSessionDescription(new String(message.getRawContent()));
+			SessionDescriptionImpl sd = (SessionDescriptionImpl)sdpFactory.createSessionDescription(new String(message.getRawContent()));
 
 			Connection cn = sd.getConnection();
 			
@@ -130,9 +135,11 @@ public class SipUtil {
 				return;
 			}
 			SipURI sipUri = (SipURI)uri;
-			logger.info("set contact host to sdp conection:"+sipUri.getHost().toString());
+			
 			cn.setAddress(sipUri.getHost().toString());
 			sd.getOrigin().setAddress(sipUri.getHost().toString());
+			
+			
 			message.setContent(sd.toString(), CONTENT_TYPE_SDP);
 		}catch(SdpParseException e)
 		{
@@ -180,12 +187,12 @@ public class SipUtil {
 				if (c.getAddress().getURI().isSipURI()) {
 					contactAddress = (SipUri) c.getAddress().getURI();
 					if (hasRPort) {
-						logger.info("set contact  port:" + via.getRPort());
+
 						contactAddress.setPort(via.getRPort());
 					}
 					if (hasReceived) {
 						try {
-							logger.info("set contact host:" + via.getReceived());
+
 							contactAddress.setHost(via.getReceived());
 						} catch (Exception e) {
 						}
@@ -229,6 +236,56 @@ public class SipUtil {
 			}
 		} else {
 			logger.info("contact is null");
+		}
+	}
+	public static void main(String[] args)
+	{
+		SdpFactory sdpFactory = SdpFactory.getInstance();
+		String sdpTxt ="v=0\r\n";
+sdpTxt +="o=doubango 1983 678901 IN IP4 0.0.0.0\r\n";
+sdpTxt +="s=-\r\n";
+sdpTxt +="c=IN IP4 120.24.95.155\r\n";
+sdpTxt +="t=0 0\r\n";
+sdpTxt +="a=tcap:1 RTP/AVPF\r\n";
+sdpTxt +="m=audio 39170 RTP/AVP 8 0 3 111 101\r\n";
+sdpTxt +="a=ptime:20\r\n";
+sdpTxt +="a=minptime:1\r\n";
+sdpTxt +="a=maxptime:255\r\n";
+sdpTxt +="a=silenceSupp:off - - - -\r\n";
+sdpTxt +="a=rtpmap:8 PCMA/8000/1\r\n";
+sdpTxt +="a=rtpmap:0 PCMU/8000/1\r\n";
+sdpTxt +="a=rtpmap:3 GSM/8000/1\r\n";
+sdpTxt +="a=rtpmap:111 opus/48000/2\r\n";
+sdpTxt +="a=fmtp:111 maxplaybackrate=16000; sprop-maxcapturerate=16000; stereo=0; sprop-stereo=0; useinbandfec=0; usedtx=0\r\n";
+sdpTxt +="a=rtpmap:101 telephone-event/8000/1\r\n";
+sdpTxt +="a=fmtp:101 0-16\r\n";
+sdpTxt +="a=pcfg:1 t=1\r\n";
+sdpTxt +="a=sendrecv\r\n";
+sdpTxt +="a=rtcp-mux\r\n";
+sdpTxt +="a=ssrc:3365717799 cname:52c9025b6e61f1aea71d9de24d992e44\r\n";
+sdpTxt +="a=ssrc:3365717799 mslabel:6994f7d1-6ce9-4fbd-acfd-84e5131ca2e2\r\n";
+sdpTxt +="a=ssrc:3365717799 label:doubango@audio\r\n";
+
+		try {
+			SessionDescriptionImpl sd = (SessionDescriptionImpl)sdpFactory.createSessionDescription(sdpTxt);
+Connection cn = sd.getConnection();
+			cn.setAddress("128.5.6.9");
+			sd.getOrigin().setAddress("128.6.9.5");
+			AttributeField attr = new AttributeField();
+			attr.setName("nortpproxy");
+			attr.setValue("yes");
+			sd.addField(attr);
+			
+			System.out.println(sd.toString());
+		}catch(ParseException e){
+			logger.info(e.getMessage(),e);
+		
+		}catch(SdpParseException e)
+		{
+			logger.info(e.getMessage(),e);
+		}catch(SdpException e)
+		{
+			logger.info(e.getMessage(),e);
 		}
 	}
 }
