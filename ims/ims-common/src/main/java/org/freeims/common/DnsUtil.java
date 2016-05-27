@@ -25,6 +25,7 @@ public class DnsUtil {
 	public static Address resolveICSCFHostByDNS(String domain, String transport,String dnsServer)
 			throws PeerUnavailableException, ParseException, TextParseException {
 		if (dnsServer != null && dnsServer.length() >0){
+			logger.info("DNS Server:"+dnsServer);
 		 System.setProperty("dns.server", dnsServer);
 		//ResolverConfig resolverConfig = ResolverConfig.getCurrentConfig();
 		}
@@ -88,5 +89,10 @@ public class DnsUtil {
 		}
 		logger.info("not find Type.A server:"+srvR.getAdditionalName());
 		return null;
+	}
+	public static void main(String[] args) throws Exception
+	{
+		Address a = resolveICSCFHostByDNS("saygreet.com","","127.0.0.1");
+		System.out.println(a);
 	}
 }

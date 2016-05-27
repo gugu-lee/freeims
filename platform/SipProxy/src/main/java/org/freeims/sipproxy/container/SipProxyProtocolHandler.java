@@ -23,19 +23,11 @@
 package org.freeims.sipproxy.container;
 
 
-
-
-import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import java.util.Properties;
-import java.util.Random;
-
-import javax.management.InstanceNotFoundException;
 import javax.management.MBeanRegistration;
-import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
