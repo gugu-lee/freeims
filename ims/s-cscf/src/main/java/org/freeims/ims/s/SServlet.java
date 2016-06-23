@@ -127,7 +127,110 @@ public class SServlet extends GenericServlet {
 	}
 
 	public void doMessage(SipProxyRequest req) throws ServletException, IOException {
-		req.createResponseAction(500, "no implements");
+		RealmConfig realmConfig = scscfConf.getRealmConfig(SipUtil.extractRealm(req));
+		req.sendResponse(100);
+		
+
+		SubsequentAction action = SubsequentAction.createForwardAction();
+
+		if (SipUtil.isSameRealm(req.getFrom(), req.getTo())) {
+			try {
+				
+				UEStoreInfo fromUEInfo = onlineUEPool.get(req.getFrom().getURI());
+				if (fromUEInfo == null) {
+					req.createResponseAction(404);
+					return;
+				}
+
+				PChargingVector pcv = (PChargingVector) req.getHeaderInstance(PChargingVector.NAME);
+				pcv.setOriginatingIOI(realmConfig.getName());
+
+				req.removeFirst(Route.NAME);
+
+				UEStoreInfo toUEInfo = onlineUEPool.get(req.getTo().getURI());
+
+				if (toUEInfo == null) {
+					req.createResponseAction(404);
+					return;
+				}
+
+				SipUtil.alterRequestURI(req, (SipURI) toUEInfo.getContact().getAddress().getURI());
+
+				pcv.setTerminatingIOI(realmConfig.getName());
+
+				PCalledPartyID pcpID = new PCalledPartyID((AddressImpl) req.getTo());
+				req.setHeader(pcpID);
+
+
+				Address path = toUEInfo.getPath();
+				req.pushRoute(path);
+				action.setAppId("mo");
+				req.setSubsequentAction(action);
+				return;
+				
+			} catch (ParseException e) {
+				logger.info(e.getMessage(), e);
+				req.createResponseAction(500);
+				return ;
+			}
+		}
+
+		// orig
+		if (!SipUtil.isMessageInTerm(req)) {
+
+			UEStoreInfo ueInfo = onlineUEPool.get(req.getFrom().getURI());
+			if (ueInfo == null) {
+				req.createResponseAction(404);
+				return;
+			}
+
+			try {
+				SipURI requestUri = (SipURI) req.getRequestURI();
+				PChargingVector pcv = (PChargingVector) req.getHeaderInstance(PChargingVector.NAME);
+				pcv.setOriginatingIOI(realmConfig.getName());
+
+				req.removeFirst(Route.NAME);
+				Address address = DnsUtil.resolveICSCFHostByDNS(requestUri.getHost(), "UDP",scscfConf.getDnsServer());
+				req.pushRoute(address);
+				action.setAppId("mo");
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+				req.createResponseAction(500);
+				return;
+			}
+		} else {
+			// term
+			UEStoreInfo ueInfo = onlineUEPool.get(req.getTo().getURI());
+
+			if (ueInfo == null) {
+				req.createResponseAction(404);
+				return;
+			}
+			try {
+				SipURI toURI = (SipURI) req.getTo().getURI();
+
+				realmConfig = scscfConf.getRealmConfig(toURI.getHost());
+				SipUtil.alterRequestURI(req, (SipURI) ueInfo.getContact().getAddress().getURI());
+
+
+
+				PChargingVector pcv = (PChargingVector) req.getHeaderInstance(PChargingVector.NAME);
+				pcv.setTerminatingIOI(realmConfig.getName());
+
+//				PCalledPartyID pcpID = new PCalledPartyID((AddressImpl) req.getTo());
+//				req.setHeader(pcpID);
+
+				req.removeFirst(Route.NAME);
+				Address path = ueInfo.getPath();
+				req.pushRoute(path);
+				action.setAppId("mt");
+			} catch (ParseException e) {
+				logger.info(e.getMessage(), e);
+				req.createResponseAction(500);
+				return;
+			}
+		}
+		req.setSubsequentAction(action);
 		return ;
 	}
 

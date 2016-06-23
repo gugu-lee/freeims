@@ -232,7 +232,43 @@ public class PServlet extends GenericServlet
 
 	public void doMessage(SipProxyRequest req)  throws ServletException,IOException
 	{
-		((SipProxyRequestImpl)req).createResponseAction(500,"no implemented");
+		logger.info("doMessage");
+		SubsequentAction action =  SubsequentAction.createForwardAction();
+		SipUri uri = null;
+		RealmConfig d =null;
+		if (!SipUtil.isMessageInTerm(req))
+		{
+			
+			uri = (SipUri)req.getFrom().getURI();
+			if (onlineUEPool.get(uri) == null){
+				req.createResponseAction(404, "you have not login.");
+				return;
+			}
+			onlineUEPool.active(uri);
+			
+			 d = pcscfConf.getRealmConfig(uri.getHost());
+			req.setHeader("P-Asserted-Identity", req.getFrom().getURI().toString());
+
+			req.setHeader("P-Charging-Vector",
+					"icid-value=\"P-CSCF"+createIcidValue() //ueIcidValueTable.get(req.getFrom())
+					+"\";icid-generated-at="+d.getHost());
+			SipUtil.alterRequestContact(req);
+			
+			action.setAppId("mo");
+
+		}else{
+			uri = (SipUri)req.getTo().getURI();
+			if (onlineUEPool.get(uri) == null){
+				req.createResponseAction(404, "you have not login.");
+				return;
+			}
+			onlineUEPool.active(uri);
+
+			req.removeFirst(RouteHeader.NAME);
+			action.setAppId("mt");
+		}
+		logger.info("return ");
+		((SipProxyRequestImpl)req).setSubsequentAction(action);
 	}
 	
 	public void doResponse(SipProxyResponse resp)  throws ServletException,IOException
