@@ -1,6 +1,8 @@
 package org.freeims.ims.i;
 
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Vector;
 
 import javax.servlet.ServletConfig;
@@ -32,8 +34,8 @@ import org.freeims.sipproxy.servlet.SubsequentAction;
 import org.freeims.sipproxy.servlet.impl.GenericServlet;
 
 @WebServlet(value="/MainServlet",
-initParams={@WebInitParam(name="configFile",value="iConfig.xml"),
-		@WebInitParam(name="diameterPeerConfig",value="diameterPeerI.xml")},
+initParams={@WebInitParam(name="configFile",value="ims-config.xml"),
+		@WebInitParam(name="diameterPeerConfig",value="diameter-peer-ims.xml")},
 loadOnStartup=1)
 public class IServlet extends GenericServlet implements EventListener, TransactionListener {
 
@@ -44,7 +46,7 @@ public class IServlet extends GenericServlet implements EventListener, Transacti
 	private ICscfConfig iConfig = null;
 	class ExDiameterMessage extends DiameterMessage {
 		public ExDiameterMessage(int Command_Code, boolean Request, boolean Proxiable, int Application_id,
-				long HopByHop_id, long EndToEnd_id) {
+				int HopByHop_id, int EndToEnd_id) {
 			super(Command_Code, Request, Proxiable, Application_id, HopByHop_id, EndToEnd_id);
 		}
 
@@ -67,9 +69,16 @@ public class IServlet extends GenericServlet implements EventListener, Transacti
 	@Override
 	public void init(ServletConfig servletConfig) throws ServletException {
 		super.init(servletConfig);
-		diameterPeer = new DiameterPeer();
-		String filePath = Loader.getResource(servletConfig.getInitParameter("diameterPeerConfig")).getPath();
-		diameterPeer.configure(filePath, true);
+		//URLClassLoader cl = (URLClassLoader)Config.class.getClassLoader();
+		//ClassLoader oldCls = Thread.currentThread().getContextClassLoader();
+		//Thread.currentThread().setContextClassLoader(cl);
+		String dpFileName = servletConfig.getInitParameter("diameterPeerConfig");
+		logger.info("diameterpeer config file:"+dpFileName);
+		URL url = Loader.getResource(dpFileName);
+		String filePath = url.getPath();
+		//Thread.currentThread().setContextClassLoader(oldCls);
+		
+		diameterPeer = new DiameterPeer(filePath, "ICSCF");
 		diameterPeer.enableTransactions(10, 1);
 		
 		icscfConfigFile = servletConfig.getInitParameter("configFile");
@@ -249,17 +258,52 @@ public class IServlet extends GenericServlet implements EventListener, Transacti
 		logger.info("SCscf name:" + scscfName);
 		return scscfName;
 	}
-	// private SubsequentAction register()
-	// {
-	//
-	// }
-	// public SubsequentAction unregister()
-	// {
-	//
-	// }
+
 	public void doMessage(SipProxyRequest req) throws ServletException, IOException {
 
-		return ;
+		DiameterMessage message = new DiameterMessage(DiameterConstants.Command.LIR, true, false,
+				DiameterConstants.Application.Cx, diameterPeer.getNextHopByHopId(), diameterPeer.getNextHopByHopId());
+
+		String realm =  SipUtil.extractRealm((SipURI)req.getTo().getURI());
+		logger.info("realm:"+realm);
+		
+		UtilAVP.addDestinationRealm(message, realm);
+		String hssAddress = this.iConfig.getRealmConfig(realm).getHssAddress();
+		logger.info("hssAddress:"+hssAddress);
+		UtilAVP.addDestinationHost(message, hssAddress);
+
+		UtilAVP.addPublicIdentity(message, req.getTo().getURI().toString());
+		UtilAVP.addOriginatingRequest(message, 1);
+
+		try {
+			DiameterMessage lia = diameterPeer.sendRequestBlocking(message);
+
+			if (lia == null) {
+				req.createResponseAction(500);
+				return ;
+			}
+
+			if (lia.flagError) {
+				req.createResponseAction(403);
+				return ;
+			}
+			String scscfName = fetchSCscfName(lia);
+			Address scscfAddress = SipProxyFactory.getAddressFactory().createAddress(scscfName);
+			req.pushRoute(scscfAddress);
+			
+			SubsequentAction action = SubsequentAction.createForwardAction();
+			if (SipUtil.isMessageInTerm(req)){
+				action.setAppId("mt");
+			}else{
+				action.setAppId("mo");
+			}
+			req.setSubsequentAction(action);
+			return ;
+
+		} catch (Exception e) {
+			logger.info(e.getMessage(), e);
+			req.createResponseAction(500);
+		}
 	}
 
 	public void doInvite(SipProxyRequest req) throws ServletException, IOException {

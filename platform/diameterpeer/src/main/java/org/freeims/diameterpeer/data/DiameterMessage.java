@@ -68,10 +68,10 @@ public class DiameterMessage {
 	public int applicationID=0;
 	
 	/** Hop-by-Hop identifier */
-	public long hopByHopID=0;
+	public int hopByHopID=0;
 
 	/** End-to-End identifier */
-	public long endToEndID=0;
+	public int endToEndID=0;
 	
 	/** Contained AVPs */
 	public Vector<AVP> avps;
@@ -99,7 +99,7 @@ public class DiameterMessage {
 	 * @param EndToEnd_id
 	 */
 	public DiameterMessage(int Command_Code,boolean Request,boolean Proxiable,
-			int Application_id,long HopByHop_id, long EndToEnd_id)
+			int Application_id,int HopByHop_id, int EndToEnd_id)
 	{
 		this.commandCode = Command_Code;
 		this.flagRequest = Request;

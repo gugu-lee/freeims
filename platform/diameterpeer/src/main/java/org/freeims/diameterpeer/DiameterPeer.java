@@ -29,6 +29,7 @@ import org.freeims.diameterpeer.transaction.TransactionListener;
 import org.freeims.diameterpeer.transaction.TransactionWorker;
 import org.freeims.diameterpeer.transport.Acceptor;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -100,7 +101,7 @@ public class DiameterPeer {
 	private TransactionWorker transactionWorker=null;
 	
 	/** Configuration DOM */
-	Document config; 	
+	//; 	
 	
 	/** Hop-by-Hop identifier */
 	public int hopbyhop_id=0;
@@ -124,7 +125,7 @@ public class DiameterPeer {
 	 */
 	public DiameterPeer()
 	{
-		LOGGER.info("Bean style constructor called, don't forget to configure!");
+		eventListeners = new Vector<EventListener>();
 	}
 	
 	/**
@@ -134,18 +135,38 @@ public class DiameterPeer {
 	 */
 	public DiameterPeer(String xml)
 	{
+		this();
 		configure(xml,false);
 	}
 	
-	/**
-	 * Configure a DiameterPeer based on a configuration file or string.
-	 * Path && isFile==true is equivalent to DiameterPeer(Path).
-	 * 
-	 * @param xml XML configuration payload.
-	 * @param isFile Set to true if string is a path/uri, false if raw xml.
-	 */
-	public void configure(String xml, boolean isFile)
+	public DiameterPeer(String xmlFile,String elemName)
 	{
+		this();
+		Document config =readConfigFile(xmlFile);
+		Element docElem=config.getDocumentElement();
+		NodeList nodeList = docElem.getElementsByTagName("DiameterPeer");
+		int listSize = nodeList.getLength();
+		for (int i=0;i<listSize;++i)
+		{
+			Element elem = (Element)nodeList.item(i);
+			LOGGER.info("elemName:"+elem.getAttribute("Name"));
+			if (elem.getAttribute("Name").equals(elemName)){
+				LOGGER.info("config this element");
+				configure(elem);
+				return;
+			}
+		}
+	}
+	
+	public void configure(Element rootElem)
+	{
+		
+		
+		java.util.Random rand = new java.util.Random();
+		hopbyhop_id = rand.nextInt();
+		endtoend_id = ((int) (System.currentTimeMillis()&0xFFF))<<20;
+		endtoend_id |= rand.nextInt() & 0xFFFFF;
+	
 		Acceptor acc;
 		NodeList nl;
 		Node n,nv;
@@ -154,44 +175,22 @@ public class DiameterPeer {
 		String fqdn,realm;
 		Application app;
 		
-		eventListeners = new Vector<EventListener>();
-		
-		java.util.Random rand = new java.util.Random();
-		hopbyhop_id = rand.nextInt();
-		endtoend_id = ((int) (System.currentTimeMillis()&0xFFF))<<20;
-		endtoend_id |= rand.nextInt() & 0xFFFFF;
-	
-		if (isFile){
-			/* parse the config */
-			if (!readConfigFile(xml)) {
-				LOGGER.error("DiameterPeer: Error parsing config file");
-				return;
-			}
-		}
-		else {
-			/* parse the config */
-			if (!readConfigString(xml)) {
-				LOGGER.error("DiameterPeer: Error parsing config String");
-				return;
-			}
-		}
-		
-		FQDN = config.getDocumentElement().getAttribute("FQDN");
-		LOGGER.info("FQDN: " + config.getDocumentElement().getAttribute("FQDN"));
-		Realm = config.getDocumentElement().getAttribute("Realm");
-		LOGGER.info("Realm: " + config.getDocumentElement().getAttribute("Realm"));
-		Vendor_Id = Integer.parseInt(config.getDocumentElement().getAttribute("Vendor_Id"));
-		LOGGER.info("Vendor_ID : " + Integer.parseInt(config.getDocumentElement().getAttribute("Vendor_Id")));
-		Product_Name = config.getDocumentElement().getAttribute("Product_Name");
-		LOGGER.info("Product Name: " + config.getDocumentElement().getAttribute("Product_Name"));
-		AcceptUnknownPeers = Integer.parseInt(config.getDocumentElement().getAttribute("AcceptUnknownPeers"))!=0;
+		FQDN = rootElem.getAttribute("FQDN");
+		LOGGER.info("FQDN: " + FQDN);
+		Realm = rootElem.getAttribute("Realm");
+		LOGGER.info("Realm: " + rootElem.getAttribute("Realm"));
+		Vendor_Id = Integer.parseInt(rootElem.getAttribute("Vendor_Id"));
+		LOGGER.info("Vendor_ID : " + Integer.parseInt(rootElem.getAttribute("Vendor_Id")));
+		Product_Name = rootElem.getAttribute("Product_Name");
+		LOGGER.info("Product Name: " + rootElem.getAttribute("Product_Name"));
+		AcceptUnknownPeers = Integer.parseInt(rootElem.getAttribute("AcceptUnknownPeers"))!=0;
 		LOGGER.info("AcceptUnknwonPeers: " + AcceptUnknownPeers);
-		DropUnknownOnDisconnect = Integer.parseInt(config.getDocumentElement().getAttribute("DropUnknownOnDisconnect"))!=0;
+		DropUnknownOnDisconnect = Integer.parseInt(rootElem.getAttribute("DropUnknownOnDisconnect"))!=0;
 		LOGGER.info("DropUnknownOnDisconnect: " + DropUnknownOnDisconnect);
 		
-		Tc = Integer.parseInt(config.getDocumentElement().getAttribute("Tc"));
-		workerCount = Integer.parseInt(config.getDocumentElement().getAttribute("Workers"));
-		queueLength = Integer.parseInt(config.getDocumentElement().getAttribute("QueueLength"));
+		Tc = Integer.parseInt(rootElem.getAttribute("Tc"));
+		workerCount = Integer.parseInt(rootElem.getAttribute("Workers"));
+		queueLength = Integer.parseInt(rootElem.getAttribute("QueueLength"));
 		
 		queueTasks = new ArrayBlockingQueue<DiameterTask>(queueLength,true);
 		
@@ -200,7 +199,7 @@ public class DiameterPeer {
 		/* Read Supported Application ids */
 		this.AuthApp = new Vector<Application>();
 		this.AcctApp = new Vector<Application>();
-		nl = config.getDocumentElement().getElementsByTagName("Auth");
+		nl = rootElem.getElementsByTagName("Auth");
 		for(int i=0;i<nl.getLength();i++){
 			n = nl.item(i);
 			app_id = 0;
@@ -212,7 +211,7 @@ public class DiameterPeer {
 			app = new Application(app_id,vendor_id,Application.Auth);
 			this.AuthApp.add(app);
 		}
-		nl = config.getDocumentElement().getElementsByTagName("Acct");
+		nl = rootElem.getElementsByTagName("Acct");
 		for(int i=0;i<nl.getLength();i++){
 			n = nl.item(i);
 			app_id = 0;
@@ -228,7 +227,7 @@ public class DiameterPeer {
 		peerManager = new PeerManager(this);
 		
 		/* Read the peers from the configuration file */
-		nl = config.getDocumentElement().getElementsByTagName("Peer");
+		nl = rootElem.getElementsByTagName("Peer");
 		for(int i=0;i<nl.getLength();i++){
 			n = nl.item(i);
  
@@ -246,7 +245,7 @@ public class DiameterPeer {
 		
 		/* Create & start connection acceptors */
 		acceptors = new Vector<Acceptor>();
-		nl = config.getDocumentElement().getElementsByTagName("Acceptor");
+		nl = rootElem.getElementsByTagName("Acceptor");
 		for(int i=0;i<nl.getLength();i++){
 			n = nl.item(i);
 			
@@ -270,14 +269,44 @@ public class DiameterPeer {
 			acceptors.add(acc);
 		}
 		
-		initRoutingTable(config);
+		initRoutingTable(rootElem);
 
 		peerManager.start();
+	}
+	
+	/**
+	 * Configure a DiameterPeer based on a configuration file or string.
+	 * Path && isFile==true is equivalent to DiameterPeer(Path).
+	 * 
+	 * @param xml XML configuration payload.
+	 * @param isFile Set to true if string is a path/uri, false if raw xml.
+	 */
+	public void  configure(String xml, boolean isFile)
+	{
+		
+		Document config=null;
+		if (isFile){
+			/* parse the config */
+			if ((config=readConfigFile(xml))==null) {
+				LOGGER.error("DiameterPeer: Error parsing config file");
+				//return null;
+			}
+		}
+		else {
+			/* parse the config */
+			if ((config=readConfigString(xml))==null) {
+				LOGGER.error("DiameterPeer: Error parsing config String");
+				//return null;
+			}
+		}
+		configure(config.getDocumentElement());
+		
 		
 	}
 	
-	private boolean readConfigFile(String cfgFile)
+	private Document readConfigFile(String cfgFile)
 	{
+		Document config=null;
 		DocumentBuilderFactory factory =
 			DocumentBuilderFactory.newInstance();
 		//factory.setValidating(true);   
@@ -291,21 +320,22 @@ public class DiameterPeer {
 	       if (sxe.getException() != null)
 	           x = sxe.getException();
 	       x.printStackTrace();
-	       return false;
+	       return null;
 	    } catch (ParserConfigurationException pce) {
 	        // Parser with specified options can't be built
 	        pce.printStackTrace();
-	        return false;
+	        return null;
 	    } catch (IOException ioe) {
 	       // I/O error
 	       ioe.printStackTrace();
-	       return false;
+	       return null;
 	    }
-	    return true;
+	    return config;
 	}
 	
-	private boolean readConfigString(String cfgString)
+	private Document  readConfigString(String cfgString)
 	{
+		Document config = null;
 		DocumentBuilderFactory factory =
 			DocumentBuilderFactory.newInstance();
 		//factory.setValidating(true);   
@@ -319,33 +349,33 @@ public class DiameterPeer {
 	       if (sxe.getException() != null)
 	           x = sxe.getException();
 	       x.printStackTrace();
-	       return false;
+	       return null;
 	    } catch (ParserConfigurationException pce) {
 	        // Parser with specified options can't be built
 	        pce.printStackTrace();
-	        return false;
+	        return null;
 	    } catch (IOException ioe) {
 	       // I/O error
 	       ioe.printStackTrace();
-	       return false;
+	       return null;
 	    }
-	    return true;
+	    return config;
 	}
 	
 	/* configure routing table */
-	private void initRoutingTable(Document config) {		
+	private void initRoutingTable(Element config) {		
 		NodeList nl, nlc;
 		String fqdn,realm;
 		int metric;
 		
 		this.routingTable = new RoutingEngine();
-		nl = config.getDocumentElement().getElementsByTagName("DefaultRoute");
+		nl = config.getElementsByTagName("DefaultRoute");
 		for(int i=0;i<nl.getLength();i++){
 			fqdn = nl.item(i).getAttributes().getNamedItem("FQDN").getNodeValue();
 			metric = Integer.valueOf(nl.item(i).getAttributes().getNamedItem("metric").getNodeValue());
 			routingTable.addDefaultRoute(fqdn, metric);
 		}
-		nl = config.getDocumentElement().getElementsByTagName("Realm");
+		nl = config.getElementsByTagName("Realm");
 		for(int i=0;i<nl.getLength();i++){
 			realm = nl.item(i).getAttributes().getNamedItem("name").getNodeValue();
 			nlc = nl.item(i).getChildNodes();
@@ -561,11 +591,13 @@ public class DiameterPeer {
 	 */	
 	public DiameterMessage sendRequestBlocking(DiameterMessage req)
 	{
-		if (this.transactionWorker!=null) return transactionWorker.sendRequestBlocking(req);
-		else {
-			LOGGER.error("DiameterPeer:sendRequestBlocking(): Transactions are not enabled on this peer!");
-			return null;
+		if (this.transactionWorker!=null){
+			LOGGER.info("DiameterPeer:sendRequestBlocking(): Transactions are OK!");
+			return transactionWorker.sendRequestBlocking(req);
 		}
+		LOGGER.error("DiameterPeer:sendRequestBlocking(): Transactions are not enabled on this peer!");
+		return null;
+		
 	}
 	
 

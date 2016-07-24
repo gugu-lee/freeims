@@ -3,7 +3,6 @@ package org.freeims.ims.config;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 import org.apache.log4j.helpers.Loader;
@@ -17,7 +16,8 @@ public class Config {
 	private RtpProxyConfig rtpproxyConfig;
 	private static Config config = null;
 	private ArrayList<RealmConfig> realms = new ArrayList<RealmConfig>();
-
+	private UserProperties props = new UserProperties();
+	
 	public void addRealmConfig(RealmConfig d) {
 		logger.info("addRealmConfig:"+realms.toString());
 		realms.add(d);
@@ -37,10 +37,17 @@ public class Config {
 		digester.addSetProperties("config");
 		
 		prefix="config/";
+		digester.addObjectCreate(prefix+"property", "org.freeims.ims.config.UserProperty");
+		digester.addSetProperties(prefix+"property");
+		digester.addSetNext(prefix+"property", "addProperty", "org.freeims.ims.config.UserProperty");
+		
+		prefix="config/";
 		digester.addObjectCreate(prefix+"pcscf", "org.freeims.ims.config.PCscfConfig");
 		digester.addSetProperties(prefix+"pcscf");
 		digester.addSetNext(prefix+"pcscf", "setPConfig", "org.freeims.ims.config.PCscfConfig");
 
+
+		
 		prefix="config/pcscf/";
 		digester.addObjectCreate(prefix+"rtpproxy", "org.freeims.ims.config.RtpProxyConfig");
 		digester.addSetProperties(prefix+"rtpproxy");
@@ -84,13 +91,18 @@ public class Config {
 		return config;
 	}
 
-
+	public void addProperty(UserProperty up)
+	{
+		props.setProperty(up.getName(), up.getValue());
+	}
+	
 	public PCscfConfig getPConfig() {
 		return pConfig;
 	}
 
 	public void setPConfig(PCscfConfig pConfig) {
 		logger.info("setPcscfConfig");
+		pConfig.setProps(props);
 		this.pConfig = pConfig;
 		this.pConfig.getRealmConfigs().addAll(this.realms);
 	}
@@ -100,6 +112,7 @@ public class Config {
 	}
 
 	public void setIConfig(ICscfConfig iConfig) {
+		iConfig.setProps(props);
 		this.iConfig = iConfig;
 		this.iConfig.getRealmConfigs().addAll(this.realms);
 	}
@@ -109,6 +122,7 @@ public class Config {
 	}
 
 	public void setSConfig(SCscfConfig sConfig) {
+		sConfig.setProps(props);
 		this.sConfig = sConfig;
 		this.sConfig.getRealmConfigs().addAll(this.realms);
 	}
@@ -124,6 +138,11 @@ public class Config {
 	{
 		StringBuffer sb = new StringBuffer();
 		sb.append("ims-config:\r\n");
+		sb.append("user properties:\r\n");
+		for (Object k:props.keySet())
+		{
+			sb.append(String.format("%s=%s\r\n", k,props.getProperty((String)k)));
+		}
 		sb.append("P-CSCF:\r\n");
 		sb.append(this.getPConfig().toString());
 		sb.append("I-CSCF:\r\n");

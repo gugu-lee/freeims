@@ -90,10 +90,10 @@ public class TransactionWorker extends Thread implements EventListener{
 //		LOGGER.info("transactions.size():"+transactions.size());
 		for(i=0;i<transactions.size();i++){
 			dt = transactions.get(i);
-//			LOGGER.info("dt.request.endToEndID:"+dt.request.endToEndID);
-//			LOGGER.info("ans.endToEndID:"+ans.endToEndID);
-//			LOGGER.info("dt.request.hopByHopID:"+dt.request.hopByHopID);
-//			LOGGER.info("ans.hopByHopID:"+ans.hopByHopID);
+			LOGGER.info("dt.request.endToEndID:"+dt.request.endToEndID);
+			LOGGER.info("ans.endToEndID:"+ans.endToEndID);
+			LOGGER.info("dt.request.hopByHopID:"+dt.request.hopByHopID);
+			LOGGER.info("ans.hopByHopID:"+ans.hopByHopID);
 			if (dt.request.endToEndID == ans.endToEndID &&
 				dt.request.hopByHopID == ans.hopByHopID){
 					transactions.remove(i);

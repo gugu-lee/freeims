@@ -81,7 +81,7 @@ public class UAR {
 	private static Logger logger = Logger.getLogger(UAR.class);
 	
 	public static DiameterMessage processRequest(DiameterPeer diameterPeer, DiameterMessage request){
-		
+		System.out.println("process UAR");
 		DiameterMessage response = diameterPeer.newResponse(request);
 		response.flagProxiable = true;
 		
@@ -306,6 +306,7 @@ public class UAR {
 			}
 			HibernateUtil.closeSession();
 		}		
+		System.out.println("return UAA");
 		return response;
 	}
 }

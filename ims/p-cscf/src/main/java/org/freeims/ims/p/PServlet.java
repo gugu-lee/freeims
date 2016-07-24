@@ -41,7 +41,7 @@ import org.freeims.sipproxy.servlet.SubsequentAction;
 import org.freeims.sipproxy.servlet.impl.GenericServlet;
 import org.freeims.sipproxy.servlet.impl.SipProxyRequestImpl;
 
-@WebServlet(value="/MainServlet",initParams={@WebInitParam(name="configFile",value="pConfig.xml")},loadOnStartup=1)
+@WebServlet(value="/MainServlet",initParams={@WebInitParam(name="configFile",value="ims-config.xml")},loadOnStartup=1)
 public class PServlet extends GenericServlet
 {
 	private static final long serialVersionUID = 8661236325745602526L;

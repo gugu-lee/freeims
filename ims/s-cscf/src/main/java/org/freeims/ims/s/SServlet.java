@@ -37,8 +37,8 @@ import org.freeims.sipproxy.servlet.SubsequentAction;
 import org.freeims.sipproxy.servlet.impl.GenericServlet;
 
 @WebServlet(value="/MainServlet",
-	initParams={@WebInitParam(name="configFile",value="sConfig.xml"),
-			@WebInitParam(name="diameterPeerConfig",value="diameterPeerS.xml")},
+	initParams={@WebInitParam(name="configFile",value="ims-config.xml"),
+			@WebInitParam(name="diameterPeerConfig",value="diameter-peer-ims.xml")},
 	loadOnStartup=1)
 public class SServlet extends GenericServlet {
 	/**
@@ -70,10 +70,10 @@ public class SServlet extends GenericServlet {
 		
 		try{
 			//scscfConf = (SCscfConfig)this.getServletContext().getAttribute("configInstance");
-			diameterPeer = new DiameterPeer();
+			
 			String filePath = Loader.getResource(servletConfig.getInitParameter("diameterPeerConfig")).getPath();
 			logger.info("filePath:"+filePath);
-			diameterPeer.configure(filePath, true);
+			diameterPeer = new DiameterPeer(filePath, "SCSCF");
 			diameterPeer.enableTransactions(10, 1);
 		}catch(Exception e)
 		{

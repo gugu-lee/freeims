@@ -144,8 +144,11 @@ public class RegisterHandler implements CacheEventListener
 	}
 
 	private DiameterMessage createMAR(SipProxyRequest req) {
+		int hop = DiameterUtil.nextHopByHopId();
+		int end = DiameterUtil.nextEndToEndId();
+		logger.info("hop:"+hop+"\tend:"+end);
 		DiameterMessage message = new DiameterMessage(DiameterConstants.Command.MAR, true, false,
-				DiameterConstants.Application.Cx,5,8/* DiameterUtil.nextHopByHopId(), DiameterUtil.nextEndToEndId()*/);
+				DiameterConstants.Application.Cx,hop,end );
 		String realm = SipUtil.extractRealm(req);
 		
 		//Authorization auth = (Authorization) req.getParameterableHeader(Authorization.NAME);
@@ -157,6 +160,7 @@ public class RegisterHandler implements CacheEventListener
 
 		UtilAVP.addUserName(message, username);
 		UtilAVP.addDestinationRealm(message, realm);
+		logger.info("hssAddress:"+realmConf.getHssAddress());
 		UtilAVP.addDestinationHost(message, realmConf.getHssAddress());
 		//"sip:scscf.open-ims.test:6060"
 		UtilAVP.addServerName(message, "sip:"+realmConf.getHost()+":"+realmConf.getPort());

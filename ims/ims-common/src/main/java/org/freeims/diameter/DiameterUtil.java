@@ -1,17 +1,18 @@
 package org.freeims.diameter;
 
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class DiameterUtil 
 {
-	 private static AtomicLong HopByHop_id = new AtomicLong(System.currentTimeMillis()); 
-	 private static AtomicLong EndToEnd_id= new AtomicLong(System.currentTimeMillis()-1);
+	//System.currentTimeMillis()
+	 private static AtomicInteger HopByHop_id = new AtomicInteger(1); 
+	 private static AtomicInteger EndToEnd_id= new AtomicInteger(Integer.MAX_VALUE);
 	 
-	 public static long nextHopByHopId()
+	 public static int nextHopByHopId()
 	 {
 		 return HopByHop_id.getAndIncrement();
 	 }
-	 public static long nextEndToEndId()
+	 public static int nextEndToEndId()
 	 {
 		 return EndToEnd_id.getAndDecrement();
 	 }

@@ -86,6 +86,7 @@ public class MAR {
 	private static Logger logger = Logger.getLogger(MAR.class);
 	
 	public static DiameterMessage processRequest(DiameterPeer diameterPeer, DiameterMessage request){
+		System.out.println("processMAR");
 		
 		DiameterMessage response = diameterPeer.newResponse(request);
 		response.flagProxiable = true;
@@ -353,7 +354,7 @@ public class MAR {
 			}
 			HibernateUtil.closeSession();
 		}		
-		
+		System.out.println("return MAA");
 		return response;
 	}
 	

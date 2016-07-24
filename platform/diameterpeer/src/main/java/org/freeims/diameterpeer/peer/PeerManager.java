@@ -111,10 +111,11 @@ public class PeerManager extends Thread {
 //				return p;
 //		}
 		LOGGER.info("peers.size():"+peers.size());
+		LOGGER.info("fqdn:"+fqdn);
 		for(int i=0;i<peers.size();i++){
 			p = peers.get(i);
 			LOGGER.info("p.FQDN:"+p.FQDN);
-			LOGGER.info("fqdn:"+fqdn);
+			
 			if (p.FQDN.equalsIgnoreCase(fqdn)){
 				LOGGER.info("return fqdn");
 				return p;

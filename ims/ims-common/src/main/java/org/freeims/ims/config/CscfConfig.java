@@ -7,25 +7,26 @@ import org.apache.juli.logging.LogFactory;
 
 public class CscfConfig {
 	private static Log logger = LogFactory.getLog(PCscfConfig.class);
-	private ArrayList<RealmConfig> domains = new ArrayList<RealmConfig>();
+	private ArrayList<RealmConfig> realms = new ArrayList<RealmConfig>();
 	private String dnsServer = null;
+	private UserProperties props = null;
 	
 	public ArrayList<RealmConfig> getRealmConfigs() {
-		return domains;
+		return realms;
 	}
 
 	public void addRealmConfig(RealmConfig d) {
-		domains.add(d);
+	
+		realms.add(d);
 	}
 
-	public void setRealmConfigs(ArrayList<RealmConfig> domains) {
-		this.domains = domains;
+	public void setRealmConfigs(ArrayList<RealmConfig> realms) {
+		this.realms = realms;
 	}
 
 	public RealmConfig getRealmConfig(String name) {
 
-		logger.info("name:" + name);
-		for (RealmConfig d : domains) {
+		for (RealmConfig d : realms) {
 			if (d.getName().equals(name)) {
 				return d;
 			}
@@ -33,6 +34,9 @@ public class CscfConfig {
 		}
 		return null;
 	}
+	
+	
+	
 	public String toString()
 	{
 		StringBuffer sb = new StringBuffer();
@@ -48,7 +52,28 @@ public class CscfConfig {
 	}
 
 	public void setDnsServer(String dnsServer) {
-		this.dnsServer = dnsServer;
+
+			this.dnsServer = dnsServer;
+
+	}
+
+	public void setProps(UserProperties props) {
+		this.props = props;
+
+		if (props == null)
+		{
+			logger.info("props is null");
+			return;
+		}
+		for (RealmConfig d : realms) {
+			d.setHost(props.replaceUserProperty(d.getHost()));
+			d.setHssAddress(props.replaceUserProperty(d.getHssAddress()));
+			d.setIpAddress(props.replaceUserProperty(d.getIpAddress()));
+			d.setName(props.replaceUserProperty(d.getName()));
+
+		}
+
+		this.dnsServer = props.replaceUserProperty(dnsServer);
 	}
 
 
