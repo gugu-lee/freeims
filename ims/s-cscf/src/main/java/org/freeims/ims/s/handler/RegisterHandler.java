@@ -79,6 +79,8 @@ public class RegisterHandler implements CacheEventListener
 	}
 
 	public void handlerChallengeRequest(SipProxyRequest req) {
+		String realm = SipUtil.extractRealm(req);
+		RealmConfig realmConfig = scscfConf.getRealmConfig(realm);
 		Authorization auth = (Authorization) req.getParameterableHeader(Authorization.NAME);
 		byte password[] = userAuthorizations.get(auth.getUsername());
 		byte[] ha1 = MD5Util.av_HA1(auth.getUsername().getBytes(), auth.getRealm().getBytes(), password);
@@ -101,7 +103,7 @@ public class RegisterHandler implements CacheEventListener
 		if (auth.getResponse().equals(new String(UERespData))) {
 			SipProxyResponse resp = req.createResponse(200);
 			resp.addHeader(req.getHeaderInstance(Contact.NAME));
-			resp.addHeader("Service-Route", "<sip:orig@scscf.saygreet.com:6060;lr>");
+			resp.addHeader("Service-Route", "<sip:orig@"+realmConfig.getHost()+":"+realmConfig.getPort()+";lr>");
 			resp.addHeader("P-Associated-URI", resp.getFrom().getURI().toString());
 			//P-Associated-URI
 			req.sendResponse(resp);

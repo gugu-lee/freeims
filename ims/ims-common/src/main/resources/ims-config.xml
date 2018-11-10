@@ -8,7 +8,7 @@
 		<realm name="${realmName}" host="pcscf.${realmName}" ipAddress="${ipAddress}"
 			port="4060">
 		</realm>
-		<rtpproxy enabled="true" host="127.0.0.1" port="9000">
+		<rtpproxy enabled="true" ctrlHost="127.0.0.1" ctrlPort="9000" proxyHost="xx.xxx.x.xx">
 		</rtpproxy>
 	</pcscf>
 

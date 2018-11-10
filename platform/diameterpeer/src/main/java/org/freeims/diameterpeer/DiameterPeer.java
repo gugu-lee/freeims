@@ -109,6 +109,8 @@ public class DiameterPeer {
 	/** End-to-End identifier */
 	public int endtoend_id=0;
 	
+	public String dnsServer;
+	
 	/** Generates Hop-by-Hop id. */
 	public synchronized int getNextHopByHopId()
 	{
@@ -191,7 +193,7 @@ public class DiameterPeer {
 		Tc = Integer.parseInt(rootElem.getAttribute("Tc"));
 		workerCount = Integer.parseInt(rootElem.getAttribute("Workers"));
 		queueLength = Integer.parseInt(rootElem.getAttribute("QueueLength"));
-		
+		dnsServer = rootElem.getAttribute("dnsServer");
 		queueTasks = new ArrayBlockingQueue<DiameterTask>(queueLength,true);
 		
 		startWorkers();

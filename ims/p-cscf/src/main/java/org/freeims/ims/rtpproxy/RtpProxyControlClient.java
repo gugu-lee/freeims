@@ -9,8 +9,6 @@ import javax.sdp.Connection;
 import javax.sdp.Media;
 import javax.sdp.MediaDescription;
 import javax.sdp.SdpFactory;
-import javax.sdp.SessionDescription;
-
 import javax.sip.header.FromHeader;
 import javax.sip.header.ToHeader;
 
@@ -25,14 +23,16 @@ import org.freeims.javax.sip.message.SIPMessage;
 
 public class RtpProxyControlClient {
 
-	Logger logger = Logger.getLogger(RtpProxyControlClient.class);
+	private Logger logger = Logger.getLogger(RtpProxyControlClient.class);
 	private static final String CONTENT_TYPE_SDP = "application/sdp";
-	private String host;
-	private int port;
+	private String ctrlHost;
+	private String proxyHost;
+	private int ctrlPort;
 
-	public RtpProxyControlClient(String host, int port) {
-		this.host = host;
-		this.port = port;
+	public RtpProxyControlClient(String crtlHost, int crtlPort,String proxyHost) {
+		this.ctrlHost = crtlHost;
+		this.ctrlPort = crtlPort;
+		this.proxyHost = proxyHost;
 	}
 
 	public boolean testRtpProxy() {
@@ -54,7 +54,8 @@ public class RtpProxyControlClient {
 				return;
 			}
 			Connection cn = sd.getConnection();
-			cn.setAddress(host);
+			logger.info("rtpproxy host:"+proxyHost+" ctrlHost:"+ctrlHost);
+			cn.setAddress(proxyHost);
 
 			// System.out.println("nettype:" + cn.getNetworkType());
 			SipProxyMessageImpl requestImpl = (SipProxyMessageImpl)message;
@@ -96,7 +97,6 @@ public class RtpProxyControlClient {
 				AttributeField attr = new AttributeField();
 				attr.setName("nortpproxy");
 				attr.setValue("yes");
-				logger.info("nortpproxy:yes");
 				sd.addField(attr);
 			}
 			message.setContent(sd.toString(), CONTENT_TYPE_SDP);
@@ -110,9 +110,9 @@ public class RtpProxyControlClient {
 		try {
 
 			DatagramSocket client = new DatagramSocket();
-			InetAddress addr = InetAddress.getByName(host);
+			InetAddress addr = InetAddress.getByName(ctrlHost);
 			byte[] sendbuff = request.encode();
-			DatagramPacket sendPacket = new DatagramPacket(sendbuff, sendbuff.length, addr, port);
+			DatagramPacket sendPacket = new DatagramPacket(sendbuff, sendbuff.length, addr, ctrlPort);
 			client.send(sendPacket);
 			byte[] recvBuf = new byte[100];
 			DatagramPacket recvPacket = new DatagramPacket(recvBuf, recvBuf.length);
@@ -129,8 +129,8 @@ public class RtpProxyControlClient {
 		return response;
 	}
 
-	public static RtpProxyResponse requestCommand(String host, int port, RtpProxyRequest request) {
-		return new RtpProxyControlClient(host, port).requestCommand(request);
+	public static RtpProxyResponse requestCommand(String host, int port,String proxyHost, RtpProxyRequest request) {
+		return new RtpProxyControlClient(host, port,proxyHost).requestCommand(request);
 	}
 
 

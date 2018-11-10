@@ -415,10 +415,9 @@ public class PServlet extends GenericServlet
 		try{
 
 			if (pcscfConf.getRtpProxy() != null){
-			logger.info("rtpproxy host:"+pcscfConf.getRtpProxy().getHost());
-			logger.info("rtpproxy port:"+pcscfConf.getRtpProxy().getPort());
+
 			rptProxyCtrlClient = 
-					new RtpProxyControlClient(pcscfConf.getRtpProxy().getHost(),pcscfConf.getRtpProxy().getPort());
+					new RtpProxyControlClient(pcscfConf.getRtpProxy().getCtrlHost(),pcscfConf.getRtpProxy().getCtrlPort(),pcscfConf.getRtpProxy().getProxyHost());
 			}
 			onlineUEPool =
 					new CacheObjectPool<URI,Contact>( new OnlineUEEventListener() );

@@ -6,6 +6,8 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.freeims.diameterpeer.data.AVP;
@@ -19,6 +21,8 @@ import org.freeims.diameterpeer.data.DiameterDWR;
 import org.freeims.diameterpeer.data.DiameterMessage;
 import org.freeims.diameterpeer.data.DiameterTask;
 import org.freeims.diameterpeer.transport.Communicator;
+import org.xbill.DNS.TextParseException;
+
 
 /**
  * This class defines the Diameter Peer State Machine. 
@@ -498,13 +502,44 @@ public class StateMachine {
 		return 1;
 	}
 	
+	private boolean isIpv4Format(String ipv4)
+	{
+		String regex = "(?<=(\\b|\\D))(((\\d{1,2})|(1\\d{2})|(2[0-4]\\d)|(25[0-5]))\\.){3}((\\d{1,2})|(1\\d{2})|(2[0-4]\\d)|(25[0-5]))(?=(\\b|\\D))";
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(ipv4);
+		return matcher.find();
+	}
+	
+	private static String getIpFromHostByDns(String domain,String dnsServer) throws TextParseException
+	{
+		return DnsUtil.lookupIpAddressByDns(domain, dnsServer);
+		
+		//return null;
+	}
+	
 	private static int I_Snd_Conn_Req(Peer p)
 	{
 		Socket s;
 		if (p.I_comm!=null) p.I_comm.shutdown();
 		p.I_comm = null;
+		//if (isIpv4Format)
+		String ipAddr;
 		try {
-			s = new Socket(p.FQDN,p.port);
+			if (p.diameterPeer.dnsServer !=null && p.diameterPeer.dnsServer.length()>0) {
+				ipAddr=getIpFromHostByDns(p.FQDN,p.diameterPeer.dnsServer);
+			}else
+			{
+				ipAddr=p.FQDN;
+			}
+		}catch(Exception e)
+		{
+			LOGGER.error("StateMachine: Peer "+p.FQDN+" can not be resolved.",e);
+			return StateMachine.I_Rcv_Conn_NAck;
+		}
+		
+		try {
+			
+			s = new Socket(ipAddr,p.port);
 		} catch (UnknownHostException e1) {
 			LOGGER.error("StateMachine: Peer "+p.FQDN+" can not be resolved.");
 			return StateMachine.I_Rcv_Conn_NAck;

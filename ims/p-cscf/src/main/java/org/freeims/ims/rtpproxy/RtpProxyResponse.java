@@ -25,7 +25,12 @@ public class RtpProxyResponse
 	public String getValue()
 	{
 		int indexBlankChar = responseText.indexOf(' ');
-		return responseText.substring(indexBlankChar).trim();
+		responseText= responseText.substring(indexBlankChar).trim();
+		indexBlankChar = responseText.indexOf(' ');
+		if (indexBlankChar>=0){
+			return responseText.substring(0,indexBlankChar);
+		}
+		return responseText;
 	}
 	public RtpProxyResponse(String command,String response)
 	{

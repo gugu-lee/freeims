@@ -11,7 +11,7 @@ import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
 import javax.sip.address.Address;
 import javax.sip.address.SipURI;
-
+import javax.sip.header.RouteHeader;
 import org.apache.log4j.Logger;
 import org.apache.log4j.helpers.Loader;
 import org.freeims.common.SipUtil;
@@ -25,6 +25,7 @@ import org.freeims.diameterpeer.data.DiameterMessage;
 import org.freeims.diameterpeer.transaction.TransactionListener;
 import org.freeims.ims.config.Config;
 import org.freeims.ims.config.ICscfConfig;
+import org.freeims.ims.config.RealmConfig;
 import org.freeims.javax.sip.header.Authorization;
 import org.freeims.javax.sip.header.Route;
 import org.freeims.sipproxy.servlet.SipProxyFactory;
@@ -289,6 +290,7 @@ public class IServlet extends GenericServlet implements EventListener, Transacti
 			}
 			String scscfName = fetchSCscfName(lia);
 			Address scscfAddress = SipProxyFactory.getAddressFactory().createAddress(scscfName);
+			req.removeHeader(RouteHeader.NAME);
 			req.pushRoute(scscfAddress);
 			
 			SubsequentAction action = SubsequentAction.createForwardAction();
@@ -315,7 +317,14 @@ public class IServlet extends GenericServlet implements EventListener, Transacti
 		logger.info("realm:"+realm);
 		
 		UtilAVP.addDestinationRealm(message, realm);
-		String hssAddress = this.iConfig.getRealmConfig(realm).getHssAddress();
+		RealmConfig rc = iConfig.getRealmConfig(realm);
+		if (rc==null)
+		{
+			req.createResponseAction(500);
+			return ;
+		}
+		String hssAddress = rc.getHssAddress();
+		
 		logger.info("hssAddress:"+hssAddress);
 		UtilAVP.addDestinationHost(message, hssAddress);
 
@@ -336,6 +345,7 @@ public class IServlet extends GenericServlet implements EventListener, Transacti
 			}
 			String scscfName = fetchSCscfName(lia);
 			Address scscfAddress = SipProxyFactory.getAddressFactory().createAddress(scscfName);
+			req.removeHeader(RouteHeader.NAME);
 			req.pushRoute(scscfAddress);
 			
 			SubsequentAction action = SubsequentAction.createForwardAction();
