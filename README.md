@@ -7,4 +7,4 @@ it is a framework in Tomcat and provide SIP message forward and response.it's ob
 IMS is IMS core implement.
 
 from gugu-lee.
-mail: service@freeims.org
+mail: service@freeims.org 50316452@qq.com
